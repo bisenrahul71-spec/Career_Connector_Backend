@@ -60,7 +60,7 @@ async def extract_jd(file: UploadFile = File(...)):
 
     # Use Gemini to extract structured JD info
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    model = genai.GenerativeModel("gemini-flash-latest")
     prompt = f"""
     Extract job details from this job description text.
     Return ONLY a JSON object in this exact format:
