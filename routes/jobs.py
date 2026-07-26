@@ -37,18 +37,14 @@ async def get_job(job_id: str):
 async def extract_jd(file: UploadFile = File(...)):
     contents = await file.read()
     text = ""
-
     # Extract text based on file type
     filename = file.filename.lower()
-
     if filename.endswith(".pdf"):
         pdf_reader = PyPDF2.PdfReader(io.BytesIO(contents))
         for page in pdf_reader.pages:
-            text += page.extract_text()
-
+            text += page.extract_text() or ""
     elif filename.endswith(".txt"):
         text = contents.decode("utf-8")
-
     elif filename.endswith(".docx"):
         try:
             import docx
@@ -56,7 +52,6 @@ async def extract_jd(file: UploadFile = File(...)):
             text = "\n".join([para.text for para in doc.paragraphs])
         except:
             raise HTTPException(status_code=400, detail="Could not read .docx file. Please install python-docx.")
-
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use PDF, DOCX, or TXT.")
 
@@ -65,8 +60,7 @@ async def extract_jd(file: UploadFile = File(...)):
 
     # Use Gemini to extract structured JD info
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash")
-
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
     prompt = f"""
     Extract job details from this job description text.
     Return ONLY a JSON object in this exact format:
@@ -81,13 +75,10 @@ async def extract_jd(file: UploadFile = File(...)):
     Job description text:
     {text[:4000]}
     """
-
     response = model.generate_content(prompt)
     cleaned = response.text.replace("```json", "").replace("```", "").strip()
-
     try:
         result = json.loads(cleaned)
     except:
         result = {"description": text[:2000], "skills": ""}
-
     return result
