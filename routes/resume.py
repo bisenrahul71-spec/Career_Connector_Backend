@@ -37,22 +37,19 @@ async def upload_resume(
     # Extract text
     text = ""
     for page in pdf_reader.pages:
-        text += page.extract_text()
+        text += page.extract_text() or ""
 
     # Use Gemini to extract skills
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash")
-
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
     prompt = f"""
     Extract all technical and soft skills from this resume text.
     Return ONLY a JSON array of skills like: ["Python", "SQL", "Communication"]
     Resume text:
     {text[:3000]}
     """
-
     response = model.generate_content(prompt)
     skills_text = response.text.replace("```json", "").replace("```", "").strip()
-
     try:
         skills_list = json.loads(skills_text)
     except:
