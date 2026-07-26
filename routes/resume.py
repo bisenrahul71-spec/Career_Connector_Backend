@@ -41,7 +41,7 @@ async def upload_resume(
 
     # Use Gemini to extract skills
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    model = genai.GenerativeModel("gemini-flash-latest")
     prompt = f"""
     Extract all technical and soft skills from this resume text.
     Return ONLY a JSON array of skills like: ["Python", "SQL", "Communication"]
