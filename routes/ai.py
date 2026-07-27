@@ -28,7 +28,7 @@ async def get_optional_user(token: str = Depends(oauth2_scheme)):
 @router.post("/recommend")
 async def get_recommendations(data: dict):
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-flash-latest")
 
     skills = data.get("skills", [])
     prompt = f"""
@@ -45,7 +45,7 @@ async def get_recommendations(data: dict):
 @router.get("/generate-questions")
 async def generate_questions():
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model = genai.GenerativeModel("gemini-flash-latest")
 
     prompt = """
     Generate 9 aptitude test questions (3 LRDI, 3 QA, 3 VARC).
