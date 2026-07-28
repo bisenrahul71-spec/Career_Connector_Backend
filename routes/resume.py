@@ -4,6 +4,8 @@ from database import db
 import PyPDF2
 import io
 import google.generativeai as genai
+import cloudinary
+import cloudinary.uploader
 from jose import jwt, JWTError
 from datetime import datetime
 import json
@@ -13,6 +15,12 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/login")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
@@ -39,6 +47,20 @@ async def upload_resume(
     for page in pdf_reader.pages:
         text += page.extract_text() or ""
 
+    # Upload the actual file to Cloudinary
+    resume_url = None
+    try:
+        upload_result = cloudinary.uploader.upload(
+            io.BytesIO(contents),
+            resource_type="raw",
+            folder="resumes",
+            public_id=f"{user['id']}_resume",
+            overwrite=True,
+        )
+        resume_url = upload_result.get("secure_url")
+    except Exception as e:
+        print(f"Cloudinary upload failed: {e}")
+
     # Use Gemini to extract skills
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     model = genai.GenerativeModel("gemini-flash-latest")
@@ -55,7 +77,7 @@ async def upload_resume(
     except:
         skills_list = []
 
-    # Save skills to MongoDB
+    # Save skills + resume URL to MongoDB
     await db["student_profiles"].update_one(
         {"user_id": user["id"]},
         {"$set": {
@@ -63,6 +85,7 @@ async def upload_resume(
             "email": user["email"],
             "name": user["name"],
             "skills": skills_list,
+            "resume_url": resume_url,
             "updated_at": datetime.utcnow().isoformat()
         }},
         upsert=True
@@ -70,5 +93,6 @@ async def upload_resume(
 
     return {
         "extracted_text": text[:500],
-        "skills": skills_text
+        "skills": skills_text,
+        "resume_url": resume_url
     }
