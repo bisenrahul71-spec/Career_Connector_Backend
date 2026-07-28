@@ -109,7 +109,8 @@ async def delete_job(job_id: str, user=Depends(recruiter_only)):
 #  APPLICANT ROUTES
 # ════════════════════════════════════════════════════════════
 
-# Get all applicants for a specific job
+ 
+ # Get all applicants for a specific job
 @router.get("/jobs/{job_id}/applicants")
 async def get_applicants(job_id: str, user=Depends(recruiter_only)):
     # verify this job belongs to recruiter
@@ -120,6 +121,11 @@ async def get_applicants(job_id: str, user=Depends(recruiter_only)):
     applicants = []
     async for app in db["applications"].find({"job_id": job_id}):
         app["_id"] = str(app["_id"])
+
+        # Look up resume_url from the student's profile
+        profile = await db["student_profiles"].find_one({"user_id": app["student_id"]})
+        app["resume_url"] = profile.get("resume_url") if profile else None
+
         applicants.append(app)
     return applicants
 
