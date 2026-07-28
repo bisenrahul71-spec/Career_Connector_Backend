@@ -63,12 +63,16 @@ async def extract_jd(file: UploadFile = File(...)):
     model = genai.GenerativeModel("gemini-flash-latest")
     prompt = f"""
     Extract job details from this job description text.
+    In the "description" field, preserve the original structure — keep paragraph
+    breaks and bullet points as separate lines using \\n, do not flatten everything
+    into one block of text.
+
     Return ONLY a JSON object in this exact format:
     {{
         "title": "job title or empty string",
         "company": "company name or empty string",
         "location": "location or empty string",
-        "description": "full job description text",
+        "description": "full job description text with \\n between paragraphs/bullets",
         "skills": "comma separated skills like: Python, SQL, Power BI"
     }}
     
