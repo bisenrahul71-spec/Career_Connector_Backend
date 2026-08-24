@@ -70,11 +70,20 @@ async def upload_resume(
     Resume text:
     {text[:3000]}
     """
-    response = model.generate_content(prompt)
-    skills_text = response.text.replace("```json", "").replace("```", "").strip()
-    try:
-        skills_list = json.loads(skills_text)
-    except:
+        try:
+        response = model.generate_content(
+            prompt,
+            request_options={"timeout": 60}  # give Gemini up to 60s instead of default
+        )
+        skills_text = response.text.replace("```json", "").replace("```", "").strip()
+        try:
+            skills_list = json.loads(skills_text)
+        except Exception as e:
+            print(f"Failed to parse skills JSON: {e}")
+            skills_list = []
+    except Exception as e:
+        print(f"Gemini skill extraction failed: {e}")
+        skills_text = "[]"
         skills_list = []
 
     # Save skills + resume URL to MongoDB
