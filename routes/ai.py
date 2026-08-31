@@ -29,7 +29,6 @@ async def get_optional_user(token: str = Depends(oauth2_scheme)):
 async def get_recommendations(data: dict):
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     model = genai.GenerativeModel("gemini-flash-latest")
-
     skills = data.get("skills", [])
     prompt = f"""
     Based on these skills: {', '.join(skills)}
@@ -39,7 +38,7 @@ async def get_recommendations(data: dict):
     3. Skill gaps to fill
     Return as JSON.
     """
-        try:
+    try:
         response = model.generate_content(
             prompt,
             request_options={"timeout": 60}
@@ -48,7 +47,6 @@ async def get_recommendations(data: dict):
     except Exception as e:
         print(f"Gemini recommendation generation failed: {e}")
         raise HTTPException(status_code=500, detail="AI recommendation service is temporarily unavailable. Please try again in a moment.")
-
 @router.get("/generate-questions")
 async def generate_questions():
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
