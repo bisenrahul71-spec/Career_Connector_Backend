@@ -70,7 +70,7 @@ async def upload_resume(
     Resume text:
     {text[:3000]}
     """
-        try:
+    try:
         response = model.generate_content(
             prompt,
             request_options={"timeout": 60}  # give Gemini up to 60s instead of default
