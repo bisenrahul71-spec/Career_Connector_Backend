@@ -40,7 +40,7 @@ def calculate_match_score_ai(student_skills: list, job_skills: list, job_descrip
         return 0
     try:
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-flash-latest")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""
         You are evaluating how well a candidate matches a job opening.
         Candidate's skills: {', '.join(student_skills)}
