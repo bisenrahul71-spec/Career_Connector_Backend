@@ -39,8 +39,15 @@ async def get_recommendations(data: dict):
     3. Skill gaps to fill
     Return as JSON.
     """
-    response = model.generate_content(prompt)
-    return {"recommendations": response.text}
+        try:
+        response = model.generate_content(
+            prompt,
+            request_options={"timeout": 60}
+        )
+        return {"recommendations": response.text}
+    except Exception as e:
+        print(f"Gemini recommendation generation failed: {e}")
+        raise HTTPException(status_code=500, detail="AI recommendation service is temporarily unavailable. Please try again in a moment.")
 
 @router.get("/generate-questions")
 async def generate_questions():
